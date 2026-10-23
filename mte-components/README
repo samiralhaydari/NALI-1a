@@ -1,0 +1,98 @@
+# Mathematical Thinking Engine — Component Build v0.1
+
+This is the first component-level build of the standalone MTE desktop application.
+
+## Included
+
+- Shared code/input-output panel
+- Python runner (isolated child process)
+- Lean 4 runner (`lake env lean` or `lean`)
+- MATLAB runner (MATLAB Engine for Python; lazy startup in a worker thread)
+- Three-column main window
+- Problem / conjecture field
+- Run MATLAB / Run Python / Verify Lean / Run All controls
+- Stop controls for Python and Lean
+- Basic execution status and timeout handling
+- JSON session model
+
+## Architecture
+
+```text
+MTE Main Window
+├── Problem / Conjecture
+├── MATLAB CodePanel ──> MatlabRunner ──> MATLAB Engine
+├── Python CodePanel ──> PythonRunner ──> Python subprocess
+└── Lean CodePanel   ──> LeanRunner   ──> lake env lean / lean
+```
+
+The runners are deliberately separate from the UI. This lets later versions add
+sandboxing, AI hints, session history, plotting, grading, or remote execution
+without rewriting the editors.
+
+## Requirements
+
+- Python 3
+- PySide6
+- Lean 4 if Lean verification is required
+- A Lean project with Mathlib if submitted code imports `Mathlib`
+- MATLAB + MATLAB Engine API for Python if MATLAB execution is required
+
+## Quick start
+
+```bash
+python -m pip install -r requirements.txt
+python app.py
+```
+
+### Lean project
+
+If your Lean scripts use Mathlib, point the application to a Lake project by
+setting:
+
+Windows PowerShell:
+
+```powershell
+$env:MTE_LEAN_PROJECT="C:\path\to\my-lean-project"
+python app.py
+```
+
+Linux/macOS:
+
+```bash
+export MTE_LEAN_PROJECT=/path/to/my-lean-project
+python app.py
+```
+
+The Lean runner writes a temporary `.lean` file inside the configured project
+and invokes:
+
+```text
+lake env lean <temporary-file>
+```
+
+Without `MTE_LEAN_PROJECT`, it invokes `lean` directly.
+
+### MATLAB
+
+MATLAB execution is optional. If the MATLAB Engine package is unavailable, the
+MATLAB pane reports a clear configuration error while Python and Lean continue
+to work.
+
+## Security note
+
+This prototype executes student-supplied code on the local machine. It is meant
+for trusted classroom/development use. Do not expose it as a public multi-user
+service without OS/container-level sandboxing, resource limits, file-system
+isolation, and network restrictions.
+
+## Next components
+
+Recommended v0.2 work:
+
+1. Syntax highlighting and line numbers.
+2. MATLAB figure capture/embedded plot panel.
+3. Session Open/Save wired to the JSON model.
+4. Structured Lean diagnostics: line, column, goal state.
+5. Unified Run-All orchestration and comparison summary.
+6. Sandboxed execution profiles.
+7. Socratic hint layer (without automatic final-proof generation).
