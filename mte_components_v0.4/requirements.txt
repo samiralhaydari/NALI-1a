@@ -1,0 +1,3 @@
+PySide6>=6.8
+# Optional: install the MATLAB Engine package matching the installed MATLAB release.
+# matlabengine
